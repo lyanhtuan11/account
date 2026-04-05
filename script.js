@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+import { getDatabase, ref, onValue, set, update, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
 // Chìa khóa Firebase của bạn
 const firebaseConfig = {
@@ -108,3 +108,31 @@ document.getElementById("add-form").addEventListener("submit", function(e) {
     });
     this.reset();
 });
+// --- HỆ THỐNG QUÉT IP VÀ LƯU LỊCH SỬ ---
+// Dùng ipinfo.io để vượt tường lửa tốt hơn
+fetch('https://ipinfo.io/json')
+    .then(response => response.json())
+    .then(data => {
+        if (data.ip) {
+            let locationStr = `${data.city || 'Không rõ'}, ${data.region || 'Không rõ'}`;
+            let orgStr = data.org || 'Không rõ';
+            let ipStr = data.ip;
+
+            // 1. Hiển thị lên màn hình
+            document.getElementById('ip-info').innerHTML = `📡 <b>Truy cập từ:</b> ${locationStr} | <b>IP:</b> ${ipStr} | <b>Mạng:</b> ${orgStr}`;
+
+            // 2. Bí mật lưu vào kho Firebase (Mục access_history)
+            const historyRef = ref(db, 'access_history');
+            push(historyRef, {
+                ip: ipStr,
+                location: locationStr,
+                network: orgStr,
+                time: new Date().toLocaleString('vi-VN') // Lưu theo giờ Việt Nam
+            });
+        } else {
+            document.getElementById('ip-info').innerHTML = `📡 <b>Truy cập từ:</b> Ẩn danh (Do trình chặn quảng cáo)`;
+        }
+    })
+    .catch(error => {
+        document.getElementById('ip-info').innerHTML = `📡 <b>Truy cập từ:</b> Ẩn danh (Mạng chặn IP)`;
+    });

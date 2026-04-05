@@ -36,3 +36,18 @@ button { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; f
 .add-box input { width: 20%; margin: 5px; }
 .add-box button { background-color: rgba(52, 152, 219, 0.9); padding: 10px 20px; font-size: 15px; margin-top: 15px; width: auto;}
 .add-box button:hover { background-color: #2980b9; }
+/* --- BẢNG HIỂN THỊ IP --- */
+.ip-box {
+    background: rgba(20, 20, 30, 0.4);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 8px 20px;
+    margin: -10px auto 20px auto;
+    width: fit-content;
+    color: #00ffff; /* Màu xanh neon hack não */
+    font-size: 15px;
+    text-shadow: 1px 1px 3px #000;
+    box-shadow: 0 4px 15px rgba(0, 255, 255, 0.1);
+}
