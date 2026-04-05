@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getDatabase, ref, onValue, set, update, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-
+// --- KHỞI TẠO EMAILJS NGAY LẬP TỨC (BẮT BUỘC ĐỂ CHẠY TRÊN GITHUB) ---
+emailjs.init("waVlQYTBYZhIFfblD");
 // 1. Cấu hình Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyDGgdIcFgnWcUAzWuw8Erqhf046LJmMALY",
