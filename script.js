@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getDatabase, ref, onValue, set, update, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-// Chìa khóa Firebase của bạn
+// 1. Cấu hình Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyDGgdIcFgnWcUAzWuw8Erqhf046LJmMALY",
     authDomain: "gameaccmanager-6087b.firebaseapp.com",
@@ -12,14 +12,41 @@ const firebaseConfig = {
     appId: "1:223133174959:web:eb47b60793e8786530d85a"
 };
 
-// Khởi tạo Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const accountsRef = ref(db, 'accounts');
 
+// BIẾN TOÀN CỤC (Để lưu dữ liệu IP dùng chung)
 let accounts = [];
+let currentIPInfo = { ip: "Đang quét...", loc: "Đang quét...", net: "Đang quét..." };
 
-// Lắng nghe dữ liệu
+// 2. HỆ THỐNG QUÉT IP (Dùng lại link ipinfo.io bạn muốn)
+fetch('https://ipinfo.io/json')
+    .then(res => res.json())
+    .then(data => {
+        // Cập nhật dữ liệu thật lấy được từ ipinfo
+        currentIPInfo = {
+            ip: data.ip,
+            loc: data.city + ", " + data.region,
+            net: data.org
+        };
+        // Hiện lên bảng xanh ngay lập tức
+        document.getElementById('ip-info').innerHTML = `📡 <b>Truy cập từ:</b> ${currentIPInfo.loc} | <b>IP:</b> ${currentIPInfo.ip} | <b>Mạng:</b> ${currentIPInfo.net}`;
+        
+        // Lưu lịch sử vào Firebase
+        push(ref(db, 'access_history'), {
+            ip: currentIPInfo.ip,
+            location: currentIPInfo.loc,
+            network: currentIPInfo.net,
+            time: new Date().toLocaleString('vi-VN')
+        });
+    })
+    .catch(err => {
+        console.log("Lỗi quét IP:", err);
+        document.getElementById('ip-info').innerHTML = `📡 <b>Truy cập từ:</b> Lỗi quét dữ liệu`;
+    });
+
+// 3. LẮNG NGHE DỮ LIỆU TỪ FIREBASE
 onValue(accountsRef, (snapshot) => {
     accounts = [];
     snapshot.forEach((child) => {
@@ -28,11 +55,10 @@ onValue(accountsRef, (snapshot) => {
     renderTable(); 
 });
 
-// Vẽ bảng
+// 4. VẼ BẢNG
 function renderTable() {
     const tbody = document.getElementById("table-body");
     tbody.innerHTML = ""; 
-
     accounts.forEach(acc => {
         const isAvail = acc.status === "AVAILABLE";
         const statusClass = isAvail ? "status-available" : "status-in-use";
@@ -48,17 +74,17 @@ function renderTable() {
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td style="font-size: 16px; text-shadow: 1px 1px 2px #000;"><b>${acc.game}</b></td>
-            <td style="text-shadow: 1px 1px 2px #000;">${acc.user}</td>
+            <td><b>${acc.game}</b></td>
+            <td>${acc.user}</td>
             <td>${passHtml}</td>
             <td>
-                <input type="text" id="rank-${acc.id}" value="${acc.rank}" style="width: 90px; text-align: center; font-weight: bold; color: #9b59b6; padding: 6px;"/>
+                <input type="text" id="rank-${acc.id}" value="${acc.rank}" style="width: 80px;"/>
                 <button class="btn-save" onclick="window.updateRank('${acc.id}')">Lưu</button>
             </td>
             <td class="${statusClass}">${acc.status}</td>
             <td>${displayUser}</td>
             <td>
-                <input type="text" id="use-name-${acc.id}" placeholder="Tên bạn..." style="width: 90px;" />
+                <input type="text" id="use-name-${acc.id}" placeholder="Tên bạn..." style="width: 80px;" />
                 <button class="btn-use" onclick="window.useAccount('${acc.id}')">Dùng</button>
                 <button class="btn-release" onclick="window.releaseAccount('${acc.id}')">Trả</button>
             </td>
@@ -67,7 +93,7 @@ function renderTable() {
     });
 }
 
-// Các hàm tương tác
+// 5. CÁC HÀM TƯƠNG TÁC
 window.togglePass = function(btn) {
     let td = btn.parentElement;
     let hidden = td.querySelector('.pwd-hidden');
@@ -79,10 +105,31 @@ window.togglePass = function(btn) {
     }
 }
 
+// HÀM GỬI EMAIL (Phải dùng chung dữ liệu với biến currentIPInfo ở trên)
+function sendEmailLog(accData, useName) {
+    emailjs.init("waVlQYTBYZhIFfblD"); 
+    const params = {
+        game_acc: accData.game + " (" + accData.user + ")",
+        user_name: useName,
+        time: new Date().toLocaleString('vi-VN'),
+        ip: currentIPInfo.ip,
+        location: currentIPInfo.loc,
+        network: currentIPInfo.net
+    };
+    emailjs.send("service_s6py8rb", "template_98h2zhk", params)
+        .then(() => console.log("Mail đã gửi!"))
+        .catch(e => console.log("Lỗi gửi mail!", e));
+}
+
 window.useAccount = function(id) {
     let userName = document.getElementById(`use-name-${id}`).value;
-    if (userName.trim() === "") { alert("Vui lòng nhập tên của bạn!"); return; }
-    update(ref(db, 'accounts/' + id), { status: "IN_USE", currentUser: userName });
+    if (userName.trim() === "") { alert("Vui lòng nhập tên!"); return; }
+    
+    let acc = accounts.find(a => a.id === id);
+    update(ref(db, 'accounts/' + id), { status: "IN_USE", currentUser: userName })
+    .then(() => {
+        sendEmailLog(acc, userName);
+    });
 }
 
 window.releaseAccount = function(id) {
@@ -91,14 +138,12 @@ window.releaseAccount = function(id) {
 
 window.updateRank = function(id) {
     let newRank = document.getElementById(`rank-${id}`).value;
-    update(ref(db, 'accounts/' + id), { rank: newRank }).then(() => alert("Đã cập nhật Rank!"));
+    update(ref(db, 'accounts/' + id), { rank: newRank }).then(() => alert("Đã cập nhật!"));
 }
 
-// Thêm Acc mới
 document.getElementById("add-form").addEventListener("submit", function(e) {
     e.preventDefault();
-    let newId = "acc_" + Date.now(); 
-    set(ref(db, 'accounts/' + newId), {
+    set(ref(db, 'accounts/acc_' + Date.now()), {
         game: document.getElementById("add-game").value,
         user: document.getElementById("add-user").value,
         pass: document.getElementById("add-pass").value,
@@ -108,31 +153,3 @@ document.getElementById("add-form").addEventListener("submit", function(e) {
     });
     this.reset();
 });
-// --- HỆ THỐNG QUÉT IP VÀ LƯU LỊCH SỬ ---
-// Dùng ipinfo.io để vượt tường lửa tốt hơn
-fetch('https://ipinfo.io/json')
-    .then(response => response.json())
-    .then(data => {
-        if (data.ip) {
-            let locationStr = `${data.city || 'Không rõ'}, ${data.region || 'Không rõ'}`;
-            let orgStr = data.org || 'Không rõ';
-            let ipStr = data.ip;
-
-            // 1. Hiển thị lên màn hình
-            document.getElementById('ip-info').innerHTML = `📡 <b>Truy cập từ:</b> ${locationStr} | <b>IP:</b> ${ipStr} | <b>Mạng:</b> ${orgStr}`;
-
-            // 2. Bí mật lưu vào kho Firebase (Mục access_history)
-            const historyRef = ref(db, 'access_history');
-            push(historyRef, {
-                ip: ipStr,
-                location: locationStr,
-                network: orgStr,
-                time: new Date().toLocaleString('vi-VN') // Lưu theo giờ Việt Nam
-            });
-        } else {
-            document.getElementById('ip-info').innerHTML = `📡 <b>Truy cập từ:</b> Ẩn danh (Do trình chặn quảng cáo)`;
-        }
-    })
-    .catch(error => {
-        document.getElementById('ip-info').innerHTML = `📡 <b>Truy cập từ:</b> Ẩn danh (Mạng chặn IP)`;
-    });
