@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản Lý Tài Khoản Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h2>QUẢN LÝ TÀI KHOẢN CỦA HAANNN</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Game</th>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Mức Rank</th>
+                <th>Trạng thái</th>
+                <th>Người Đang Dùng</th>
+                <th>Hành Động</th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+            </tbody>
+    </table>
+
+    <div class="add-box">
+        <h3>➕ Thêm Tài Khoản Mới</h3>
+        <form id="add-form">
+            <input type="text" id="add-game" placeholder="Tên Game (VD: Valorant)" required/>
+            <input type="text" id="add-user" placeholder="Tài khoản" required/>
+            <input type="text" id="add-pass" placeholder="Mật khẩu" required/>
+            <input type="text" id="add-rank" placeholder="Mức Rank (VD: Kim Cương)"/>
+            <br>
+            <button type="submit">Thêm Vào Danh Sách</button>
+        </form>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
