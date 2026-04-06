@@ -4,7 +4,7 @@ import { getDatabase, ref, onValue, set, update, push } from "https://www.gstati
 emailjs.init("waVlQYTBYZhIFfblD");
 
 // --- HỆ THỐNG BẢO MẬT CỬA VÀO ---
-const MASTER_PASSWORD = "112233"; // Thay pass của bạn ở đây
+const MASTER_PASSWORD = "hoangnh5859@"; // Thay pass của bạn ở đây
 
 function checkAccess() {
     let enteredPass = prompt("🔐 Vui lòng nhập mật khẩu để truy cập hệ thống của Haannn:");
