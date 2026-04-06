@@ -2,6 +2,30 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebas
 import { getDatabase, ref, onValue, set, update, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 // --- KHỞI TẠO EMAILJS NGAY LẬP TỨC (BẮT BUỘC ĐỂ CHẠY TRÊN GITHUB) ---
 emailjs.init("waVlQYTBYZhIFfblD");
+
+// --- HỆ THỐNG BẢO MẬT CỬA VÀO ---
+const MASTER_PASSWORD = "112233"; // Thay pass của bạn ở đây
+
+function checkAccess() {
+    let enteredPass = prompt("🔐 Vui lòng nhập mật khẩu để truy cập hệ thống của Haannn:");
+    
+    if (enteredPass === MASTER_PASSWORD) {
+        // Nếu đúng: Hiện trang web ra
+        document.body.classList.add("authorized");
+        alert("✅ Truy cập thành công!");
+    } else {
+        // Nếu sai: Thông báo và tải lại trang để bắt nhập lại
+        alert("❌ Sai mật khẩu! Bạn không có quyền truy cập.");
+        window.location.reload(); 
+    }
+}
+
+// Chạy kiểm tra ngay khi load script
+checkAccess();
+
+// --- CÁC CODE FIREBASE VÀ IP PHÍA DƯỚI GIỮ NGUYÊN ---
+// ...
+
 // 1. Cấu hình Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyDGgdIcFgnWcUAzWuw8Erqhf046LJmMALY",
